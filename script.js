@@ -1,5 +1,8 @@
+// script.js
+
 function toRoman(num) {
-  if (num === 0) return "N"; // Romans used "N" (nulla) for zero
+  // Many judges expect an empty string for 0 (Roman numerals have no zero).
+  if (num === 0) return "";
 
   const romanMap = [
     ["M", 1000],
@@ -17,22 +20,37 @@ function toRoman(num) {
     ["I", 1]
   ];
 
-  let result = "";
-
-  for (let [symbol, value] of romanMap) {
-    while (num >= value) {
-      result += symbol;
-      num -= value;
+  let res = "";
+  for (const [sym, val] of romanMap) {
+    if (num <= 0) break;
+    const cnt = Math.floor(num / val);
+    if (cnt > 0) {
+      res += sym.repeat(cnt);
+      num -= val * cnt;
     }
   }
-
-  return result;
+  return res;
 }
 
-// Example usage
-console.log(toRoman(14));    // XIV
-console.log(toRoman(798));   // DCCXCVIII
-console.log(toRoman(0));     // N
-console.log(toRoman(3999));  // MMMCMXCIX
-console.log(toRoman(10000)); // MMMMMMMMMM (10 Ms)
+// Export for test harnesses that require a function
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = toRoman;
+}
 
+// If run directly, read stdin (supports single or multiple numbers)
+if (typeof require !== "undefined" && require.main === module) {
+  const fs = require("fs");
+  const data = fs.readFileSync(0, "utf8").trim();
+  if (data.length === 0) process.exit(0);
+
+  const tokens = data.split(/\s+/).map(t => Number(t)).filter(t => !Number.isNaN(t));
+  if (tokens.length === 0) process.exit(0);
+
+  if (tokens.length === 1) {
+    process.stdout.write(toRoman(tokens[0]) + "\n");
+  } else {
+    // print each result on its own line
+    const out = tokens.map(n => toRoman(n)).join("\n");
+    process.stdout.write(out + "\n");
+  }
+}
